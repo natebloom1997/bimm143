@@ -1,0 +1,34 @@
+---
+title: "Grade Function"
+author: "Nathaniel Bloom"
+date: "1/30/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+Write a Function that determines an overall grade from a vector of student HW scores dropping the lowest single alignmnet score, use function to grade scores from excel document 
+```{r}
+# student 1
+s1 <- c(100, 100, 100, 100, 100, 100, 100, 90)
+# student 2
+s2 <- c(100, NA, 90, 90, 90, 90, 97, 80)
+
+#1) take out min score and store trimmed vector 
+#2) average the scores and store in a local vector 
+#3) create a data frame or vector to store all student scores 
+
+
+grade <- function(x){   
+  min_value <- min(x, na.rm = TRUE) #find min value and store in min_value
+  min_value_removed <- x[x != min_value] #for values of x where x does not equal the min value are stored in min_value_removed 
+  final_average <- mean(min_value_removed, na.rm =TRUE) #take mean of new vector and store in final_average 
+  final_average 
+}
+
+#now need to read in excel file and have function use data from it 
+student_data <- read.table()
+
+```
+
