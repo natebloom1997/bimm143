@@ -1,0 +1,173 @@
+---
+title: "Class09"
+author: "Nathaniel Bloom"
+date: "2/4/2020"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+# Generate some example data for clustering
+tmp <- c(rnorm(30,-3), rnorm(30,3))
+x <- cbind(x=tmp, y=rev(tmp))
+plot(x)
+km <- kmeans(x, centers=2, nstart=20)
+print(km)
+km$size
+km$cluster
+length(km$cluster)
+table(km$cluster)
+km$centers
+plot(x, col=km$cluster)#color by clustering results(all 1's one color and all 2's will be different color)
+points(km$centers, col="blue", pch=15, cex=2.5) #color the centers blue 
+```
+Inspect/print the results
+Q. How many points are in each cluster?
+    30
+Q. What ‘component’ of your result object details
+ - cluster size?
+    30 
+ - cluster assignment/membership?
+  30 1's and 30 2's 
+ - cluster center?
+           x         y
+1 -2.916908  2.890115
+2  2.890115 -2.916908
+Plot x colored by the kmeans cluster assignment and
+ add cluster centers as blue points
+points(km$centers, col="blue", pch=15, cex=2.5)
+
+##Hierarchical Clustering in R 
+
+"hclust()" used for this method of clustering, can reveal structures in data 
+```{r}
+# First we need to calculate point (dis)similarity
+# as the Euclidean distance between observations
+dist_matrix <- dist(x) #must calculate distance matrix before calling hclust()
+# The hclust() function returns a hierarchical
+# clustering model
+hc <- hclust(d = dist_matrix)
+# the print method is not so useful here
+hc 
+plot(hc) #plotting often used to see the results of "hclust()"
+
+# Draws a dendrogram
+plot(hc)
+abline(h=6, col="red", lty = 2)
+cutree(hc, h=6) # Cut by height h
+
+abline(h=4, col="blue", lty = 2)
+cutree(hc, h=4)
+```
+
+For cluster membership vector need to cut the tree at certain height to yield  seperate clusetr branches 
+
+```{r}
+gp4 <-cutree(hc, k=6)
+table(gp4)
+
+```
+Try and cluster and cut this data with hclust 
+```{r}
+# Step 1. Generate some example data for clustering
+x <- rbind(
+ matrix(rnorm(100, mean=0, sd = 0.3), ncol = 2), # c1
+ matrix(rnorm(100, mean = 1, sd = 0.3), ncol = 2), # c2
+ matrix(c(rnorm(50, mean = 1, sd = 0.3), # c3
+ rnorm(50, mean = 0, sd = 0.3)), ncol = 2))
+colnames(x) <- c("x", "y")
+# Step 2. Plot the data without clustering
+plot(x)
+# Step 3. Generate colors for known clusters
+# (just so we can compare to hclust results)
+col <- as.factor( rep(c("c1","c2","c3"), each=50) )
+plot(x, col=col)
+#do heirarchical clustering 
+dist_matrix <- dist(x) #must calculate distance matrix before calling hclust()
+# The hclust() function returns a hierarchical
+# clustering model
+hc <- hclust(d = dist_matrix)
+# the print method is not so useful here
+
+plot(hc)
+
+plot(hc)
+abline(h=1.75, col="red")
+```
+```{r}
+grps <- cutree(hc, k=3)
+grps
+table(grps)
+# 1  2  3  #tells amount of each number in each group 
+#57 62 31 
+#make plot with cluster results colored by cutree 
+plot(x, col=grps)
+```
+
+
+### PCA
+PCA converts the correlations (or lack there of) among all cells into a
+representation we can more readily interpret
+      objects that are highly correlated will cluster together
+      The PCs (i.e. new plot axis) are ranked by their importance 
+      The PCs (i.e. new plot axis) are ranked by the amount of variance in the       original data (i.e. gene expression values) that they “capture” 
+          • We actually get two main things out of a typical PCA
+          • The new axis (called PCs or Eigenvectors) and
+          • Eigenvalues that detail the amount of variance captured by each PC
+            
+      
+### In class wrksheet
+
+```{r}
+x <- read.csv("UK_foods.csv", row.names = 1) #remove row names a first column  
+nrow(x)
+ncol(x)
+#[1] 17
+#[1] 5
+
+dim(x)
+# [1] 17  4
+#explore the data 
+barplot(as.matrix(x), beside=T, col=rainbow(nrow(x)))
+
+pairs(x, col=rainbow(10), pch=16) #pairwise plots useful with small data sets, compares each country with eachother on each axis and each point represents a food type, points that don't lie along the axis represent differeing values between the countries 
+
+#better representation is PCA 
+
+```
+Principal Component Analysis prcomp()
+```{r}
+pca <- prcomp(t(x))
+#pca
+
+
+```
+```{r}
+summary(pca) #results of PCA (67% varience is in PC1), cumulative shows what proportion of variance due to adding each PC together (96% with PC1 + PC2)
+```
+
+what is in the PCA results? 
+```{r}
+attributes(pca)
+
+```
+
+```{r}
+plot(pca$x[,1], pca$x[,2], xlab = "PC1", ylab = "PC2") #plot variance between countries 
+text(pca$x[,1], pca$x[,2], colnames(x), col=c("black", "red", "blue", "green")) 
+
+```
+
+```{r}
+## Lets focus on PC1 as it accounts for > 90% of variance 
+par(mar=c(10, 3, 0.35, 0))
+barplot( pca$rotation[,1], las=2 )
+```
+
+### PCA for gene expression 
+
+
+
