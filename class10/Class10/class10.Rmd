@@ -1,0 +1,147 @@
+---
+title: "Class10"
+author: "Nathaniel Bloom"
+date: "2/6/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+Human Breast Cancer Cell Analysuis 
+
+```{r}
+wisc.df <- read.csv("https://bioboot.github.io/bimm143_W18/class-material/WisconsinCancer.csv")
+
+#Convert to matrix of data we want and exclude some columns (ID, Diagnosis, X)
+wisc.data <- as.matrix(wisc.df[ ,3:32 ])
+head(wisc.data)
+
+```
+
+How many patient data?
+```{r}
+nrow(wisc.data)
+```
+How many cancer and non-cancer?
+```{r}
+table(wisc.df$diagnosis)
+# B   M 
+#357 212 
+```
+
+How many features with _mean? grep() looks for "pattern"
+```{r}
+colnames(wisc.data)
+#see which column names have "_mean"
+output <- grep("_mean", colnames(wisc.data), value = TRUE) #value = TRUE tells what names match 
+#count how many there are?
+length(output)
+# 10 places with "_mean" in the column name 
+```
+
+Principal Component Analysis 
+```{r}
+# check mean and STD b/c we need to see if scaling is needed before continuing 
+
+round( apply(wisc.data,2,sd), 2) #STD 2 = look at column; 1 = use row
+
+#we do need to scale b/c contains values that have large variance 
+```
+Perform PCA
+```{r}
+wisc.pr <- prcomp(wisc.data, scale = TRUE) #scale = TRUE to scale data 
+summary (wisc.pr)
+#44% of variance in PC1, PC1 + PC2 = 63% 
+#PCA creates a new axis that is better at showing the variance among the data points 
+#axis are ordered by most variation, PC1=most variation axis, PC2= second most variation 
+#scores based on how much they influence the orientation, position, and length of the axis (PCA axis )
+#i.e. score close to zero= not much influence, and further away from zero = more influence in each direction 
+#each variable read count x weight = PC score 
+```
+Plot the PCA 
+```{r}
+biplot(wisc.pr)
+```
+See whats in the results 
+```{r}
+attributes(wisc.pr)
+#going to use X for plot b/c its the result of our PCA
+```
+
+Scatterplot PCA;  PC1 vs. PC2; colored by expert diagnosis 
+```{r}
+# Scatter plot observations by components 1 and 2
+plot(wisc.pr$x[,1], wisc.pr$x[,2], col=wisc.df$diagnosis, xlab= "PC1", ylab= "PC2") #benign=black, malignant=red
+# big variability in red = many ways for cell to be cancerous, lower variation in black means not many ways to be healthy 
+#each dot on the plot is all data for each patient compressed into a single data point by focusing on what is different between each point 
+```
+Plot PC1 and PC3 
+```{r}
+# Repeat for components 1 and 3
+plot(wisc.pr$x[, c(1, 3)], col = wisc.df$diagnosis, 
+     xlab = "PC1", ylab = "PC3")
+```
+CLuster in PC space
+```{r}
+#can we cluster original data ?
+kmeans(wisc.data, centers = 2, nstart = 20)
+#Show in New WindowClear OutputExpand/Collapse Output
+#K-means clustering with 2 clusters of sizes 438, 131 
+```
+
+```{r}
+#cluster with hclust 
+wisc.hc <- hclust(dist(wisc.data))
+plot(wisc.hc) #not a very good plot with raw data 
+```
+Use PCA results instead for clustering 
+```{r}
+wisc.pr.hclust <- hclust(dist(wisc.pr$x[,1:3]), method="ward.D2")
+plot(wisc.pr.hclust) #wisc.pr$x is the results of PCA
+```
+Cut the tree to get clusters using cutree()
+```{r}
+grps3 <- cutree(wisc.pr.hclust, k=3)
+table(grps3)
+#grps3
+#  1   2   3 
+#111  92 366 
+```
+Plot clusters 
+```{r}
+plot(wisc.pr$x[,1], wisc.pr$x[,2], col = grps3)
+```
+Use table() Function to compare $diagnosis vector with our cluster results vector 
+```{r}
+table(grps3, wisc.df$diagnosis)
+#K=3
+#grps3   B   M
+#    1   0 111
+#    2  24  68
+#    3 333  33
+#K=2
+#grps3   B   M
+#    1  24 179  #still has misclassified patients false positive and false negative
+#    2 333  33
+
+```
+Prediction Activity 
+```{r}
+new <- read.csv("new_samples.csv")
+new
+```
+
+```{r}
+npc <- predict(wisc.pr, newdata=new)
+npc
+```
+Add predicted data to previous PCA plot 
+```{r}
+plot(wisc.pr$x[,1], wisc.pr$x[,2], col=wisc.df$diagnosis)
+points(npc[,1], npc[,2], col="blue", pch=15, cex=3)#add new data to previous model
+text(npc[,1], npc[,2], labels = c(1,2), col = "white") #add lebels to the patients and shows that patient 2 would need to be prioritized to have further checks 
+```
+
+
