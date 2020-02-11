@@ -1,0 +1,44 @@
+---
+title: "HW"
+author: "Nathaniel Bloom"
+date: "1/29/2020"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+```{r}
+library(bio3d)
+# get the pdb file 
+# getpdb gets pdb files from online database and assigns the data to newpdb vector 
+getpdb <- function(x){ 
+  newpdb <- read.pdb(x) # assign newpdb to the pdb file 
+return(newpdb)
+}
+#check if first function worked 
+#print(getpdb("4AKE")) 
+# trim function uses the getpdb function to retrieve the pdb file and then uses trim.pdb from Bio3d to only include chain identifier A and atom type CA 
+trim <- function(y){# trim the pdb file with function trim
+  pdbfortrim <- getpdb(y) #use getpdb to retirve file and assign to pdbfortrim
+  trimmedpdb <- trim.pdb(pdbfortrim, chain="A", elety="CA") #use trim.pdb and assign to trimmedpdb
+return(trimmedpdb)
+}
+# check if trim function works 
+#print (trim("4AKE"))
+# function atomb uses trim function and assigns the trimmed pdb file to gettrim and then retirves only atom b from the trimmed file and assigns it to atombfromtrimmedfile
+atomb <- function(x){
+   gettrim <- trim(x)
+  atombfromtrimmedfile <- gettrim$atom$b #only retrieve atom b from trimmed file and assign to atombtrimmedfile
+return(atombfromtrimmedfile)
+}
+#check if atomb function works 
+#print(atomb("4AKE"))
+#useplotb3 for each of the three files 
+plotb3(atomb("4AKE"), typ="l", ylab="Bfactor")
+
+plotb3(atomb("1AKE"), typ="l", ylab="Bfactor")
+
+plotb3(atomb("1E4Y"), typ="l", ylab="Bfactor")
+```
+

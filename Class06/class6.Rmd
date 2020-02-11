@@ -1,0 +1,271 @@
+---
+title: 'Class 6: R Function'
+author: "Nathaniel Bloom"
+date: "1/23/2020"
+output: github_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Functions
+## Level 2 Header 
+### Level 3 Header 
+
+**File Import** Exploration
+Main read function in R is 'read.table()'
+Read in txt files 
+```{r}
+t1 <- read.table("test1 (1).txt", sep = ",", header = TRUE)
+```
+Or just use 'read.csv()'
+
+```{r}
+t1 <- read.csv("test1 (1).txt")
+t1
+```
+```{r}
+t2 <- read.table("test2.txt", sep = "$", header= TRUE)
+t2
+```
+```{r}
+t3 <- read.table("test3.txt")
+t3
+```
+# Back to Functions
+Example 1 
+```{r}
+add <- function(x, y=1) {
+ # Sum the input x and y
+ x + y
+}
+```
+
+Use This Function
+```{r}
+add(7, 3)
+```
+Vector as an input 
+
+```{r}
+add(c(1, 2, 3, 4))
+```
+
+Will add 5 to everything 
+```{r}
+add(c(1, 2, 3, 4), 5)
+```
+each vector represents X and Y respectively 
+```{r}
+add(c(1, 2, 3, 4), c(1,2,3,4))
+```
+
+```{r}
+#add(c(1, 2, 3, 4), 1, 2, 4)
+```
+Too many arguments b/c function only allows two arguments 
+
+What is 'range()' function 
+
+```{r}
+x <- c(1,1,3,11,12)
+max(x)
+min(x)
+```
+
+
+```{r}
+range(x)
+```
+
+Our second function 
+```{r}
+rescale <- function(x) {
+ rng <-range(x)
+ (x - rng[1]) / (rng[2] - rng[1])
+}
+```
+
+```{r}
+rescale(x)
+```
+
+More Testing 
+```{r}
+rescale(1:10)
+```
+
+
+
+```{r}
+# how do we get this to work 
+rescale( c(1,2,NA,3,10) )
+```
+
+```{r}
+x<- c(1,2,NA,4,5)
+rng<- range(x, na.rm =TRUE)
+rng
+```
+
+New function to deal with NA 
+```{r}
+rescale2 <- function(x) {
+ rng <-range(x, na.rm = TRUE)
+ (x - rng[1]) / (rng[2] - rng[1])
+}
+```
+
+```{r}
+rescale2(c(1,2,NA,4,5))
+```
+
+rescale 3 
+```{r}
+rescale3 <- function(x, na.rm=TRUE, plot=FALSE) {
+ rng <-range(x, na.rm=na.rm)
+ 
+ print("Hello")
+ 
+ answer <- (x - rng[1]) / (rng[2] - rng[1])
+ print("is it me you are looking for?")
+ 
+ if(plot) {
+   print("Dont sing again!")
+  plot(answer, typ="b", lwd=4)
+ }
+ print("I can see it in ...")
+ return(answer)
+ 
+}
+```
+
+```{r}
+rescale3(x, plot=FALSE)
+```
+use library to call a function when needed 
+Hands on worksheet 
+```{r}
+library(bio3d)
+s1 <- read.pdb("4AKE") # kinase with drug
+s2 <- read.pdb("1AKE") # kinase no drug
+s3 <- read.pdb("1E4Y") # kinase with drug
+s1.chainA <- trim.pdb(s1, chain="A", elety="CA")
+s2.chainA <- trim.pdb(s2, chain="A", elety="CA")
+s3.chainA <- trim.pdb(s3, chain="A", elety="CA")
+s1.b <- s1.chainA$atom$b
+s2.b <- s2.chainA$atom$b
+s3.b <- s3.chainA$atom$b
+plotb3(s1.b, typ="l", ylab="Bfactor")
+plotb3(s2.b, typ="l", ylab="Bfactor")
+plotb3(s3.b, typ="l", ylab="Bfactor")
+
+```
+```{r}
+library(bio3d)
+s1 <- read.pdb("4AKE")
+s1.chainA <- trim.pdb(s1, chain="A", elety="CA")
+print(s1.chainA)
+```
+
+
+```{r}
+s1 <- read.pdb("4AKE") # kinase with drug
+```
+
+> Q1 what does 'read.pdb()' return?
+
+Returns list of 8 things of class "pdb", "sse"
+```{r}
+class(s1)
+```
+
+```{r}
+aa321(s1$seqres)
+```
+
+```{r}
+s1$atom
+```
+
+
+```{r}
+plotb3(s1.b, typ="l", ylab="Bfactor", col="red")
+points(s2.b, typ = "l", col="blue", lwd=2)
+points(s3.b, typ = "l", col="purple", lwd=2)
+```
+
+
+
+```{r}
+hc <- hclust( dist( rbind(s1.b, s2.b, s3.b) ) )
+plot(hc)
+```
+
+
+Q3
+sse
+
+Sum Of Square Errors
+Compute the sum of squared prediction errors (or residual sum of squares) when a linear model is applied to a dataset
+
+
+
+
+
+
+
+
+
+
+
+```{r}
+library(bio3d)
+# get the pdb file 
+# getpdb gets pdb files from online database and assigns the data to newpdb vector 
+getpdb <- function(x){ 
+  newpdb <- read.pdb(x) # assign newpdb to the pdb file 
+return(newpdb)
+}
+#check if first function worked 
+#print(getpdb("4AKE")) 
+# trim function uses the getpdb function to retrieve the pdb file and then uses trim.pdb from Bio3d to only include chain identifier A and atom type CA 
+trim <- function(y){# trim the pdb file with function trim
+  pdbfortrim <- getpdb(y) #use getpdb to retirve file and assign to pdbfortrim
+  trimmedpdb <- trim.pdb(pdbfortrim, chain="A", elety="CA") #use trim.pdb and assign to trimmedpdb
+return(trimmedpdb)
+}
+# check if trim function works 
+#print (trim("4AKE"))
+# function atomb uses trim function and assigns the trimmed pdb file to gettrim and then retirves only atom b from the trimmed file and assigns it to atombfromtrimmedfile
+atomb <- function(x){
+   gettrim <- trim(x)
+  atombfromtrimmedfile <- gettrim$atom$b #only retrieve atom b from trimmed file and assign to atombtrimmedfile
+return(atombfromtrimmedfile)
+}
+#check if atomb function works 
+#print(atomb("4AKE"))
+#useplotb3 for each of the three files 
+plotb3(atomb("4AKE"), typ="l", ylab="Bfactor")
+
+plotb3(atomb("1AKE"), typ="l", ylab="Bfactor")
+
+plotb3(atomb("1E4Y"), typ="l", ylab="Bfactor")
+  
+
+```
+
+
+
+
+
+
+
+
+
+
+
+
+
+
